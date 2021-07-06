@@ -78,7 +78,7 @@ class HttpRequest(object):
         self.response_line = ''
         self.response_head = dict()
         self.response_body = ''
-        self.session = None
+        self.session = dict()
 
     def passRequestLine(self, request_line):
         header_list = request_line.split(' ')
@@ -219,14 +219,9 @@ class HttpRequest(object):
             self.response_line = ErrorCode.OK
             m = importlib.import_module(file_path)
             m.SESSION = self.processSession()            
-            if self.method == 'POST':
-                m.REQUEST = self.request_data
-                m.POST = self.post_data
-                m.GET = None
-            else:
-                m.REQUEST = self.request_data
-                m.POST = None
-                m.GET = self.get_data
+            m.REQUEST = self.request_data
+            m.POST = self.post_data
+            m.GET = self.get_data
             self.response_body = m.app()            
             self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
             self.response_head['Set-Cookie'] = self.Cookie

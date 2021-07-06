@@ -1,21 +1,32 @@
 # -*- coding:utf-8 -*-
 import os
+import sys
 import importlib
 
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+sys.path.append(rootPath)
+from util import debug
+
+
 # 全局变量
-SESSION = None
-POST = None
+SESSION = dict()
+POST = dict()
 GET = dict()
 REQUEST = dict()
 
 class Response():
     _DATA = {}
 
+    def __init__(self, param = {}):
+        for k in param:
+            object.__getattribute__(self, '_DATA')[k] = param[k]
+
     def __getattribute__(self, name: str):
-        return self._DATA.get(name, '')
+        return object.__getattribute__(self, '_DATA').get(name, '')
     
     def __setattr__(self, name: str, value):
-        self._DATA[name] = value
+        object.__getattribute__(self, '_DATA')[name] = value
 
 class Request():
     _POST = {}
@@ -29,31 +40,30 @@ class Request():
 
     # 获取request值
     def __getattribute__(self, name: str):
-        if name in self._GET:
-            print('here')
-            return self._GET['name']
-        elif name in self._POST:
-            return self._POST['name']
+        if name in object.__getattribute__(self, '_GET'):
+            return object.__getattribute__(self, '_GET')[name]
+        elif name in object.__getattribute__(self, '_POST'):
+            return object.__getattribute__(self, '_POST')[name]
         else:
             return ''
     
     # 是否为空
     def notNull(self, name: str):
-        if self._GET.__contains__(name):
+        if object.__getattribute__(self, '_GET').__contains__(name):
             return True
-        elif self._POST.__contains__(name):
+        elif object.__getattribute__(self, '_POST_').__contains__(name):
             return True
         else:
             return False
     
     def get(self, name: str):
-        return self._GET.get(name, '')
+        return object.__getattribute__(self, '_GET').get(name, '')
     
     def post(self, name: str):
-        return self._POST.get(name, '')
+        return object.__getattribute__(self, '_POST').get(name, '')
     
     def session(self, name: str):
-        return self._SESSION.get(name, '')
+        return object.__getattribute__(self, '_SESSION').get(name, '')
 
 def app():
     request = Request(POST, GET, SESSION)
@@ -71,5 +81,5 @@ def app():
 
     
 if __name__ == '__main__':
-    _GET = {'_c': 'index', '_a': 'index', 'foo':'bar'}
-    app()
+    GET = {'_c': 'index', '_a': 'index', 'foo':'bar'}
+    debug("app():", app())
