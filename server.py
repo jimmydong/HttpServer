@@ -34,7 +34,7 @@ class ThreadPoolManger():
 
 def tcp_link(sock, addr):
     print('Accept new connection from %s:%s...' % addr)
-    request = sock.recv(1024)
+    request = sock.recv(4096) # 注意大小限制
     http_req = HttpRequest()
     http_req.passRequest(request)
     sock.send(http_req.getResponse().encode('utf-8'))

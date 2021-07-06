@@ -1,12 +1,21 @@
 # -*- coding:utf-8 -*-
 import os
 import xml.dom.minidom
+import importlib
+import copy
+from util import debug
+
+
+_debug = None #单文件调试开关
+
+
 
 
 # 返回码
 class ErrorCode(object):
     OK = "HTTP/1.1 200 OK\r\n"
     NOT_FOUND = "HTTP/1.1 404 Not Found\r\n"
+    PY_NOT_FOUND = "HTTP/1.1 404 Python Not Found\r\n"
 
 
 # 将字典转成字符串
@@ -46,7 +55,7 @@ class Session(object):
             node = dom.createElement(key)
             node.appendChild(dom.createTextNode(self.data[key]))
             root.appendChild(node)
-        print(self.cook_file)
+        debug(self.cook_file)
         with open(self.cook_file, 'w') as f:
             dom.writexml(f, addindent='\t', newl='\n', encoding='utf-8')
 
@@ -58,10 +67,13 @@ class HttpRequest(object):
 
     def __init__(self):
         self.method = None
-        self.url = None
+        self.url = ''
+        self.query = ''
         self.protocol = None
         self.head = dict()
         self.Cookie = None
+        self.get_data = dict()
+        self.post_data = dict()
         self.request_data = dict()
         self.response_line = ''
         self.response_head = dict()
@@ -71,9 +83,12 @@ class HttpRequest(object):
     def passRequestLine(self, request_line):
         header_list = request_line.split(' ')
         self.method = header_list[0].upper()
-        self.url = header_list[1]
+        url_info = header_list[1].split('?')
+        self.url = url_info[0]
+        if len(url_info) > 1: 
+            self.query = url_info[1]
         if self.url == '/':
-            self.url = '/index.html'
+            self.url = '/index'
         self.protocol = header_list[2]
 
     def passRequestHead(self, request_head):
@@ -81,7 +96,6 @@ class HttpRequest(object):
         for option in head_options:
             key, val = option.split(': ', 1)
             self.head[key] = val
-            # print key, val
         if 'Cookie' in self.head:
             self.Cookie = self.head['Cookie']
 
@@ -96,33 +110,39 @@ class HttpRequest(object):
 
         # 所有post视为动态请求
         # get如果带参数也视为动态请求
-        # 不带参数的get视为静态请求
+        # !!! 不带参数的get视为静态请求 !!!
         if self.method == 'POST':
             self.request_data = {}
+            self.get_data = {}
+            self.post_data = {}
             request_body = body.split('\r\n\r\n', 1)[1]
             parameters = request_body.split('&')   # 每一行是一个字段
             for i in parameters:
                 if i=='':
                     continue
                 key, val = i.split('=', 1)
-                self.request_data[key] = val
-            self.dynamicRequest(HttpRequest.RootDir + self.url)
-        if self.method == 'GET':
-            if self.url.find('?') != -1:        # 含有参数的get
-                self.request_data = {}
-                req = self.url.split('?', 1)[1]
-                s_url = self.url.split('?', 1)[0]
-                parameters = req.split('&')
+                self.post_data[key] = val
+            if self.query:        # 含有参数的get
+                parameters = self.query.split('&')
                 for i in parameters:
                     key, val = i.split('=', 1)
-                    self.request_data[key] = val
-                self.dynamicRequest(HttpRequest.RootDir + s_url)
+                    self.get_data[key] = val
+            self.request_data = dict(self.get_data.items() + self.post_data.items())
+            self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
+        if self.method == 'GET':
+            if self.query:        # 含有参数的get
+                parameters = self.query.split('&')
+                for i in parameters:
+                    key, val = i.split('=', 1)
+                    self.get_data[key] = val
+                self.request_data = copy.deepcopy(self.get_data)
+                self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
             else:
                 self.staticRequest(HttpRequest.RootDir + self.url)
 
     # 只提供制定类型的静态文件
     def staticRequest(self, path):
-        # print path
+        debug('staticRequest', path)
         if not os.path.isfile(path):
             f = open(HttpRequest.NotFoundHtml, 'r')
             self.response_line = ErrorCode.NOT_FOUND
@@ -180,27 +200,46 @@ class HttpRequest(object):
         return cookie
 
     def dynamicRequest(self, path):
+        debug('synamicRequest', path)
+        debug('get', self.get_data)
+        debug('post', self.post_data)
         # 如果找不到或者后缀名不是py则输出404
         if not os.path.isfile(path) or os.path.splitext(path)[1] != '.py':
-            f = open(HttpRequest.NotFoundHtml, 'r')
-            self.response_line = ErrorCode.NOT_FOUND
-            self.response_head['Content-Type'] = 'text/html'
-            self.response_body = f.read()
+            debug('file not found', path)
+            if _debug:
+                self.response_body = f"response: file not found: {path}"
+            else:
+                f = open(HttpRequest.NotFoundHtml, 'r')
+                self.response_line = ErrorCode.PY_NOT_FOUND
+                self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
+                self.response_body = f.read()
         else:
             # 获取文件名，并且将/替换成.
-            file_path = path.split('.', 1)[0].replace('/', '.')
+            file_path = path.split('.', 1)[0].replace('/', '.') #注意：文件名中不能有多余的 . 
             self.response_line = ErrorCode.OK
-            m = __import__(file_path)
-            m.main.SESSION = self.processSession()            
+            m = importlib.import_module(file_path)
+            m.SESSION = self.processSession()            
             if self.method == 'POST':
-                m.main.POST = self.request_data
-                m.main.GET = None
+                m.REQUEST = self.request_data
+                m.POST = self.post_data
+                m.GET = None
             else:
-                m.main.POST = None
-                m.main.GET = self.request_data
-            self.response_body = m.main.app()            
-            self.response_head['Content-Type'] = 'text/html'
+                m.REQUEST = self.request_data
+                m.POST = None
+                m.GET = self.get_data
+            self.response_body = m.app()            
+            self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
             self.response_head['Set-Cookie'] = self.Cookie
 
     def getResponse(self):
         return self.response_line+dict2str(self.response_head)+'\r\n'+self.response_body
+
+
+if __name__ == '__main__':
+    _debug = True
+    request = b'GET /index?_c=c&_a=a HTTP/1.1\r\nHost: 127.0.0.1:9999\r\nConnection: keep-alive\r\nCache-Control: max-age=0\r\nsec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"\r\nsec-ch-ua-mobile: ?0\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\r\nSec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-User: ?1\r\nSec-Fetch-Dest: document\r\nAccept-Encoding: gzip, deflate, br\r\nAccept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7\r\nCookie: 1625566670298\r\n\r\n'
+    
+    http_req = HttpRequest()
+    http_req.passRequest(request)
+    print(http_req.response_body)
+
