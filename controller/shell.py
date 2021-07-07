@@ -11,7 +11,7 @@ from root.index import Request, Response
 import re
 
 def ps(request: Request, response: Response):
-    result = os.popen('ps -af -o args --columns=200')
+    result = os.popen('ps -ax -o pid,args --columns=200')
     if request.search:
         out = []
         for i in result.readlines():
