@@ -4,7 +4,7 @@ import xml.dom.minidom
 import importlib
 import copy
 from util import debug
-
+import util
 
 _debug = None #单文件调试开关
 
@@ -108,6 +108,9 @@ class HttpRequest(object):
         self.passRequestLine(request_line)
         self.passRequestHead(request_head)
 
+        url = (self.url + '?' + self.query) if self.query else self.url
+        util.access_log(url, self.method)
+
         # 所有post视为动态请求
         # get如果带参数也视为动态请求
         # !!! 不带参数的get视为静态请求 !!!
@@ -144,10 +147,13 @@ class HttpRequest(object):
     def staticRequest(self, path):
         debug('staticRequest', path)
         if not os.path.isfile(path):
-            f = open(HttpRequest.NotFoundHtml, 'r')
-            self.response_line = ErrorCode.NOT_FOUND
-            self.response_head['Content-Type'] = 'text/html'
-            self.response_body = f.read()
+            if os.path.isfile(path + '.py'):
+                self.dynamicRequest(path + '.py')
+            else:
+                f = open(HttpRequest.NotFoundHtml, 'r')
+                self.response_line = ErrorCode.NOT_FOUND
+                self.response_head['Content-Type'] = 'text/html'
+                self.response_body = f.read()
         else:
             extension_name = os.path.splitext(path)[1]  # 扩展名
             extension_set = {'.css', '.html', '.js'}

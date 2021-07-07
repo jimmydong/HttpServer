@@ -3,6 +3,7 @@ import os
 from pprint import pprint as pp
 import sys
 import time
+import json
 
 # 调试函数
 def debug(*args):
@@ -25,6 +26,20 @@ def debug(*args):
             print('------------------------------------------end debug')
     except ValueError:
         return 'unknown', 0, 'unknown'
+
+def access_log(url, method):
+    now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    curPath = os.path.abspath(os.path.dirname(__file__))
+    with open(curPath + "/logs/access.log", 'a') as f:
+        f.write(f"{now} [{method}] {url}")
+
+def jsonOk(data = None):
+    re = {"success": True, "data": data}
+    return json.dumps(re)
+
+def jsonFail(msg = '', data = None):
+    re = {"success": False, "msg": msg, "data": data}
+    return json.dumps(re)
 
 if __name__ == '__main__':
     debug('测试', {'hello':'world'})

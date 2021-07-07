@@ -73,6 +73,12 @@ def app():
     response._c = _c
     response._a = _a
 
+    # 安全保护
+    key_list = ['39d8DE3fdyGBgdd3']
+    if _c in ['shell']:
+        if not request.key in key_list:
+            return "Authorized Fail."
+
     py = 'controller/' + _c + '.py'
     if not os.path.isfile(py):
         return f"Error: controller not found: {py}"

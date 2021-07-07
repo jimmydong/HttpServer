@@ -16,4 +16,4 @@ def index(request: Request, response: Response):
 if __name__ == '__main__':
     request = Request({}, {'foo':'bar'}, {})
     response = Response({'_c':'index', '_a':'index'})
-    debug("index():", index(request, response))
+    debug(f"__{response._c}__:", eval(response._a)(request, response))

@@ -16,4 +16,4 @@ def test(request: Request, response: Response):
 if __name__ == '__main__':
     request = Request({}, {'foo':'bar'}, {})
     response = Response({'_c':'demo', '_a':'test'})
-    debug("test():", test(request, response))
+    debug(f"__{response._c}__:", eval(response._a)(request, response))
