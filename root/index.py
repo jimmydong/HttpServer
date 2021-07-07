@@ -73,10 +73,15 @@ def app():
     response._c = _c
     response._a = _a
 
-    # 安全保护
-    key_list = ['39d8DE3fdyGBgdd3']
+    # 安全保护(优先使用密码文件)
+    key_file = os.path.split(rootPath)[0] + '/http_server_auth.key'
+    if os.path.isfile(key_file):
+        with open(key_file , 'r') as f:
+            key = f.read(32)
+    else:
+        key = '39d8DE3fdyGBgdd3'
     if _c in ['shell']:
-        if not request.key in key_list:
+        if request.key != key:
             return "Authorized Fail."
 
     py = 'controller/' + _c + '.py'
