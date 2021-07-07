@@ -42,11 +42,13 @@ def tcp_link(sock, addr):
 
 
 def start_server():
+    bind = '0.0.0.0'
+    port = 7788
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('127.0.0.1', 9999))
+    s.bind((bind, port))
     s.listen(10)
     thread_pool = ThreadPoolManger(5)
-    print('listen in %s:%d' % ('127.0.0.1', 9999))
+    print('listen in %s:%d' % (bind, port))
     while True:
         sock, addr = s.accept()
         thread_pool.add_work(tcp_link, *(sock, addr))
