@@ -27,19 +27,31 @@ def ps(request: Request, response: Response):
 def host(request: Request, response: Response):
     out = {}
     fd = os.popen('df -h')
-    out['disk'] = fd.read(4096)
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['disk'] = t
     fd.close()
 
-    fd = os.popen('df -h')
-    out['iptables'] = os.popen('iptables-save')
+    fd = os.popen('cat /etc/rc.local')
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['rc_local'] = t
     fd.close()
 
-    fd = os.popen('df -h')
-    out['rc_local'] = os.popen('cat /etc/rc.local')
+    fd = os.popen('sudo iptables-save')
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['iptables'] = t
     fd.close()
 
-    fd = os.popen('df -h')
-    out['crontab'] = os.popen('crontab -l')
+    fd = os.popen('sudo crontab -l')
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['crontab'] = t
     fd.close()
     
     print(out)
