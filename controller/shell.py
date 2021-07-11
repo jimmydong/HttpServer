@@ -28,7 +28,7 @@ def host(request: Request, response: Response):
     out['disk'] = os.popen('df -h')
     out['iptables'] = os.popen('sudo iptables-save')
     out['rc_local'] = os.popen('sudo cat /etc/rc.local')
-    out.crontab = os.popen('sudo crontab -l')
+    out['crontab'] = os.popen('sudo crontab -l')
     
     return util.jsonOk(out)
 
