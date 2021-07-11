@@ -31,19 +31,19 @@ def host(request: Request, response: Response):
     fd.close()
 
     fd = os.popen('df -h')
-    out['iptables'] = os.popen('sudo iptables-save')
+    out['iptables'] = os.popen('iptables-save')
     fd.close()
 
     fd = os.popen('df -h')
-    out['rc_local'] = os.popen('sudo cat /etc/rc.local')
+    out['rc_local'] = os.popen('cat /etc/rc.local')
     fd.close()
 
     fd = os.popen('df -h')
-    out['crontab'] = os.popen('sudo crontab -l')
+    out['crontab'] = os.popen('crontab -l')
     fd.close()
     
     print(out)
-    
+
     return util.jsonOk(out)
 
 

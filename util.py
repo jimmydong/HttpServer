@@ -35,7 +35,6 @@ def access_log(url, method):
 
 def jsonOk(data = None):
     re = {"success": True, "data": data}
-    print(re)
     return json.dumps(re)
 
 def jsonFail(msg = '', data = None):
