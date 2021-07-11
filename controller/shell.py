@@ -12,23 +12,35 @@ import re
 
 # 获取进程信息
 def ps(request: Request, response: Response):
-    result = os.popen('ps -ax -o pid,args --columns=200')
+    fd = os.popen('ps -ax -o pid,args --columns=200')
     if request.search:
         out = []
-        for i in result.readlines():
+        for i in fd.readlines():
             if re.search(request.search, i):
                 out.append(i)
     else:
-        out = result.readlines()
+        out = fd.readlines()
+    fd.close()
     return util.jsonOk(out)
 
 # 获取服务器信息
 def host(request: Request, response: Response):
     out = {}
-    out['disk'] = os.popen('df -h')
+    fd = os.popen('df -h')
+    out['disk'] = fd.read(4096)
+    fd.close()
+
+    fd = os.popen('df -h')
     out['iptables'] = os.popen('sudo iptables-save')
+    fd.close()
+
+    fd = os.popen('df -h')
     out['rc_local'] = os.popen('sudo cat /etc/rc.local')
+    fd.close()
+
+    fd = os.popen('df -h')
     out['crontab'] = os.popen('sudo crontab -l')
+    fd.close()
     
     return util.jsonOk(out)
 
