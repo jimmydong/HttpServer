@@ -10,6 +10,7 @@ import util
 from root.index import Request, Response
 import re
 
+# 获取进程信息
 def ps(request: Request, response: Response):
     result = os.popen('ps -ax -o pid,args --columns=200')
     if request.search:
@@ -21,8 +22,15 @@ def ps(request: Request, response: Response):
         out = result.readlines()
     return util.jsonOk(out)
 
-    if request.param:
-        cmd = 'ps -ef' + request.param
+# 获取服务器信息
+def host(request: Request, response: Response):
+    out = {}
+    out.disk = os.popen('df -h')
+    out.iptables = os.popen('sudo iptables-save')
+    out.rc_local = os.popen('sudo cat /etc/rc.local')
+    out.crontab = os.popen('sudo crontab -l')
+    
+    return util.jsonOk(out)
 
 
 if __name__ == '__main__':
