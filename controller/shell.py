@@ -54,8 +54,6 @@ def host(request: Request, response: Response):
     out['crontab'] = t
     fd.close()
     
-    print(out)
-
     return util.jsonOk(out)
 
 
