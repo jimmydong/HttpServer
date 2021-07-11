@@ -42,6 +42,8 @@ def host(request: Request, response: Response):
     out['crontab'] = os.popen('sudo crontab -l')
     fd.close()
     
+    print(out)
+    
     return util.jsonOk(out)
 
 
