@@ -25,9 +25,9 @@ def ps(request: Request, response: Response):
 # 获取服务器信息
 def host(request: Request, response: Response):
     out = {}
-    out.disk = os.popen('df -h')
-    out.iptables = os.popen('sudo iptables-save')
-    out.rc_local = os.popen('sudo cat /etc/rc.local')
+    out['disk'] = os.popen('df -h')
+    out['iptables'] = os.popen('sudo iptables-save')
+    out['rc_local'] = os.popen('sudo cat /etc/rc.local')
     out.crontab = os.popen('sudo crontab -l')
     
     return util.jsonOk(out)
