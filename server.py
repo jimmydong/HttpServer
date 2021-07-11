@@ -57,10 +57,12 @@ def start_server():
 
 
 if __name__ == '__main__':
+    # PID文件
     curPath = os.path.abspath(os.path.dirname(__file__))
     pid = os.getpid()
     with open(f'{curPath}/server.pid', 'w') as file:
         file.write(f'{pid}')
+    # 执行
     start_server()
 
 
