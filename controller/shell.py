@@ -60,4 +60,4 @@ def host(request: Request, response: Response):
 if __name__ == '__main__':
     request = Request({}, {'search':'/Google Chrome.app/|/User/'}, {})
     response = Response({'_c':'shell', '_a':'ps'})
-    debug(f"__{response._c}__:", eval(response._a)(request, response))
+    debug("__%s__:" % response._c, eval(response._a)(request, response))
