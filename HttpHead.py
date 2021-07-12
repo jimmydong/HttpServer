@@ -213,7 +213,7 @@ class HttpRequest(object):
         if not os.path.isfile(path) or os.path.splitext(path)[1] != '.py':
             debug('file not found', path)
             if _debug:
-                self.response_body = f"response: file not found: {path}"
+                self.response_body = "response: file not found: %s" % path
             else:
                 f = open(HttpRequest.NotFoundHtml, 'r')
                 self.response_line = ErrorCode.PY_NOT_FOUND
