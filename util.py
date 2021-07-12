@@ -14,13 +14,13 @@ def debug(*args):
         line = current_frame.f_lineno
         func = current_frame.f_code.co_name
         if len(args) == 0:
-            print(f'{now} {file}:line {line} ---- here!')
+            print('%s %s:line %d ---- here!' % now, file, line)
         elif len(args) == 1:
-            print(f'{now} {file}:line {line} [debug]')
+            print('%s %s:line %d [debug]' % now, file, line)
             pp(args[0])
             print('------------------------------------------end debug')
         else:
-            print(f'{now} {file}:line {line} 【{args[0]}】')
+            print('%s %s:line %d 【%s】' % now, file, line, args[0])
             for i in args[1:]:
                 pp(i)
             print('------------------------------------------end debug')
@@ -31,7 +31,7 @@ def access_log(url, method):
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     curPath = os.path.abspath(os.path.dirname(__file__))
     with open(curPath + "/logs/access.log", 'a') as f:
-        f.write(f"{now} [{method}] {url}")
+        f.write('%s [%s] %s' % now, method, url)
 
 def jsonOk(data = None):
     re = {"success": True, "data": data}
