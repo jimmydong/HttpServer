@@ -53,6 +53,13 @@ def host(request: Request, response: Response):
         t.append(i)
     out['crontab'] = t
     fd.close()
+
+    fd = os.popen('sudo systemctl list-unit-files --type=service | grep -v disabled')
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['systemd'] = t
+    fd.close()
     
     return util.jsonOk(out)
 
