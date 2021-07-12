@@ -86,7 +86,7 @@ def app():
 
     py = 'controller/' + _c + '.py'
     if not os.path.isfile(py):
-        return f"Error: controller not found: {py}"
+        return "Error: controller not found: %s" % py
     controller = importlib.import_module('controller.' + _c)
     return getattr(controller, _a)(request, response)
 
