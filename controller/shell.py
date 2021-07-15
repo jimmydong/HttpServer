@@ -60,6 +60,13 @@ def host(request: Request, response: Response):
         t.append(i)
     out['systemd'] = t
     fd.close()
+
+    fd = os.popen('sudo cat /etc/passwd')
+    t = []
+    for i in fd.readlines():
+        t.append(i)
+    out['passwd'] = t
+    fd.close()
     
     return util.jsonOk(out)
 
