@@ -55,7 +55,6 @@ class Session(object):
             node = dom.createElement(key)
             node.appendChild(dom.createTextNode(self.data[key]))
             root.appendChild(node)
-        debug(self.cook_file)
         with open(self.cook_file, 'w') as f:
             dom.writexml(f, addindent='\t', newl='\n', encoding='utf-8')
 

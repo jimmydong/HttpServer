@@ -1,7 +1,8 @@
-fork from https://github.com/freelamb/simple_http_server
 
 # Python Http服务器实现
-> 基于python的简单服务器
+> 基于python的简单服务器[划重点：未使用任何框架，纯代码实现HTTP解析和多进程管理]
+
+借鉴参考：https://github.com/freelamb/simple_http_server
 
 1. 接受静态请求，`html`，`png`等文件
 2. 接受动态请求，脚本类型为`python`
