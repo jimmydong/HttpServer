@@ -31,7 +31,7 @@ def access_log(url, method):
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     curPath = os.path.abspath(os.path.dirname(__file__))
     with open(curPath + "/logs/access.log", 'a') as f:
-        f.write('%s [%s] %s' % (now, method, url))
+        f.write("%s [%s] %s\n" % (now, method, url))
 
 def jsonOk(data = None):
     re = {"success": True, "data": data}
