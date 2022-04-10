@@ -16,7 +16,7 @@ class ErrorCode(object):
     OK = "HTTP/1.1 200 OK\r\n"
     NOT_FOUND = "HTTP/1.1 404 Not Found\r\n"
     PY_NOT_FOUND = "HTTP/1.1 404 Python Not Found\r\n"
-
+    ERROR = "HTTP/1.1 500 Server Error\r\n"
 
 # 将字典转成字符串
 def dict2str(d):
@@ -74,7 +74,7 @@ class HttpRequest(object):
         self.get_data = dict()
         self.post_data = dict()
         self.request_data = dict()
-        self.response_line = ''
+        self.response_code = ''
         self.response_head = dict()
         self.response_body = ''
         self.session = dict()
@@ -98,6 +98,7 @@ class HttpRequest(object):
         if 'Cookie' in self.head:
             self.Cookie = self.head['Cookie']
 
+    # 处理http请求
     def passRequest(self, request):
         request = request.decode('utf-8')
         if len(request.split('\r\n', 1)) != 2:
@@ -131,7 +132,7 @@ class HttpRequest(object):
                     self.get_data[key] = val
             self.request_data = dict(self.get_data.items() + self.post_data.items())
             self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
-        if self.method == 'GET':
+        elif self.method == 'GET':
             if self.query:        # 含有参数的get
                 parameters = self.query.split('&')
                 for i in parameters:
@@ -141,40 +142,52 @@ class HttpRequest(object):
                 self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
             else:
                 self.staticRequest(HttpRequest.RootDir + self.url)
+        else:
+            self.response_code = ErrorCode.ERROR
+            debug('Error: unknown http type')
 
-    # 只提供制定类型的静态文件
+    # 处理静态文件请求 OR 没有参数的*.py（注意：只提供许可类型的静态文件）
     def staticRequest(self, path):
         debug('staticRequest', path)
+        # 先判断文件是否存在
         if not os.path.isfile(path):
+            # 省略.py扩展名的，按动态请求处理
             if os.path.isfile(path + '.py'):
                 self.dynamicRequest(path + '.py')
             else:
-                f = open(HttpRequest.NotFoundHtml, 'r')
-                self.response_line = ErrorCode.NOT_FOUND
-                self.response_head['Content-Type'] = 'text/html'
-                self.response_body = f.read()
+                self.response_code = ErrorCode.NOT_FOUND
+                with open(HttpRequest.NotFoundHtml, 'r') as f:
+                    self.response_head['Content-Type'] = 'text/html'
+                    self.response_body = f.read()
         else:
             extension_name = os.path.splitext(path)[1]  # 扩展名
-            extension_set = {'.css', '.html', '.js'}
-            if extension_name == '.png':
-                f = open(path, 'rb')
-                self.response_line = ErrorCode.OK
-                self.response_head['Content-Type'] = 'text/png'
-                self.response_body = f.read()
-            elif extension_name in extension_set:
-                f = open(path, 'r')
-                self.response_line = ErrorCode.OK
-                self.response_head['Content-Type'] = 'text/html'
-                self.response_body = f.read()
-            elif extension_name == '.py':
+            extension_list = {
+                'image/jpeg'    : ['.jpg', '.gif', '.png'],
+                'text/html'     : ['.css', '.html', '.js']
+            }
+            handle_extension_flag = False
+            # *.py 按动态文件处理
+            if extension_name == '.py':
                 self.dynamicRequest(path)
-            # 其他文件不返回
+                handle_extension_flag = True
             else:
-                f = open(HttpRequest.NotFoundHtml, 'r')
-                self.response_line = ErrorCode.NOT_FOUND
-                self.response_head['Content-Type'] = 'text/html'
-                self.response_body = f.read()
+                # 按扩展名许可列表处理
+                for type in extension_list:
+                    if extension_name in extension_list[type]:
+                        with open(path, 'rb') as f:
+                            self.response_code = ErrorCode.OK
+                            self.response_head['Content-Type'] = type
+                            self.response_body = f.read()
+                            handle_extension_flag = True
+            # 不在列表中的扩展名文件
+            if not handle_extension_flag:
+                # 其他类型文件返回 404
+                self.response_code = ErrorCode.NOT_FOUND
+                with open(HttpRequest.NotFoundHtml, 'r') as f:
+                    self.response_head['Content-Type'] = 'text/html'
+                    self.response_body = f.read()
 
+    # 处理session（TODO::定期清理root/cookie文件）
     def processSession(self):
         self.session = Session()
         # 没有提交cookie，创建cookie
@@ -196,7 +209,6 @@ class HttpRequest(object):
                 self.session.write2XML()                
         return self.session
 
-
     def generateCookie(self):
         import time, hashlib
         cookie = str(int(round(time.time() * 1000)))
@@ -204,35 +216,42 @@ class HttpRequest(object):
         hl.update(cookie.encode(encoding='utf-8'))
         return cookie
 
+    # 处理动态URL
     def dynamicRequest(self, path):
         debug('synamicRequest', path)
         debug('get', self.get_data)
         debug('post', self.post_data)
-        # 如果找不到或者后缀名不是py则输出404
-        if not os.path.isfile(path) or os.path.splitext(path)[1] != '.py':
+        if not os.path.isfile(path):
+            # 如果文件不存在则输出404
             debug('file not found', path)
             if _debug:
                 self.response_body = "response: file not found: %s" % path
             else:
-                f = open(HttpRequest.NotFoundHtml, 'r')
-                self.response_line = ErrorCode.PY_NOT_FOUND
-                self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
-                self.response_body = f.read()
+                self.response_code = ErrorCode.PY_NOT_FOUND
+                with open(HttpRequest.NotFoundHtml, 'r') as f:
+                    self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
+                    self.response_body = f.read()
+        elif os.path.splitext(path)[1].split('?')[0] != '.py':
+            # 非 .py 按静态文件处理
+            self.staticRequest(HttpRequest.RootDir + path.split('?')[0])
         else:
-            # 获取文件名，并且将/替换成.
+            # 获取文件名，并且将/替换成.并调用运行
             file_path = path.split('.', 1)[0].replace('/', '.') #注意：文件名中不能有多余的 . 
-            self.response_line = ErrorCode.OK
+            self.response_code = ErrorCode.OK
             m = importlib.import_module(file_path)
             m.SESSION = self.processSession()            
             m.REQUEST = self.request_data
             m.POST = self.post_data
             m.GET = self.get_data
-            self.response_body = m.app()            
-            self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
-            self.response_head['Set-Cookie'] = self.Cookie
+            try:
+                self.response_body = m.app() # 注意：对应处理py中需要有app方法    
+                self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
+                self.response_head['Set-Cookie'] = self.Cookie
+            except Exception as err:
+                debug('Exception in %s' % file_path, err.message)
 
     def getResponse(self):
-        return self.response_line+dict2str(self.response_head)+'\r\n'+self.response_body
+        return self.response_code + dict2str(self.response_head) + '\r\n' + self.response_body
 
 
 if __name__ == '__main__':
