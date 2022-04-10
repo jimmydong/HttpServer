@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+'''
+mvc主文件
+'''
 import os
 import sys
 import importlib

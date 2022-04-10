@@ -9,7 +9,7 @@ from util import debug
 from root.index import Request, Response
 
 def index(request: Request, response: Response):
-    out = "Hello World"
+    out = "403 Forbidden: "
     out += f"   {response._c}/{response._a}"
     return out
 

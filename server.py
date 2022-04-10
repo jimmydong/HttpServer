@@ -33,16 +33,20 @@ class ThreadPoolManger():
     def add_work(self, func, *args):
         self.work_queue.put((func, args))
 
-
+# 处理tcp连接
 def tcp_link(sock, addr):
     print('Accept new connection from %s:%s...' % addr)
     request = sock.recv(4096) # 注意大小限制
     http_req = HttpRequest()
-    http_req.passRequest(request)
-    sock.send(http_req.getResponse().encode('utf-8'))
+    try:
+        http_req.passRequest(request)
+        sock.send(http_req.getResponse().encode('utf-8'))
+    except Exception as err:
+        print('exception: %s' % err.message)
+        sock.send('500\r\n500 Internal Server Error'.encode('utf-8'))
     sock.close()
 
-
+# 启动守护
 def start_server():
     bind = '0.0.0.0'
     port = 7788
