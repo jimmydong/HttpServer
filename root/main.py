@@ -5,6 +5,7 @@ SESSION = None
 POST = None
 GET = None
 REQUEST = None
+RAW = None
 
 def app():
     if POST is not None and len(POST) > 0:

@@ -74,6 +74,7 @@ class HttpRequest(object):
         self.Cookie = None
         self.get_data = dict()
         self.post_data = dict()
+        self.post_raw = ''
         self.request_data = dict()
         self.response_code = ''
         self.response_head = dict()
@@ -91,13 +92,14 @@ class HttpRequest(object):
             self.url = '/index'
         self.protocol = header_list[2]
 
+    # 处理头信息（注意：全部转为小写，便于后续处理）
     def passRequestHead(self, request_head):
         head_options = request_head.split('\r\n')
         for option in head_options:
             key, val = option.split(': ', 1)
-            self.head[key] = val
-        if 'Cookie' in self.head:
-            self.Cookie = self.head['Cookie']
+            self.head[key.lower()] = val
+        if 'cookie' in self.head:
+            self.Cookie = self.head['cookie']
 
     # 处理http请求
     def passRequest(self, request):
@@ -118,20 +120,29 @@ class HttpRequest(object):
         if self.method == 'POST':
             self.request_data = {}
             self.get_data = {}
-            self.post_data = {}
-            request_body = body.split('\r\n\r\n', 1)[1]
-            parameters = request_body.split('&')   # 每一行是一个字段
-            for i in parameters:
-                if i=='':
-                    continue
-                key, val = i.split('=', 1)
-                self.post_data[key] = val
             if self.query:        # 含有参数的get
                 parameters = self.query.split('&')
                 for i in parameters:
                     key, val = i.split('=', 1)
                     self.get_data[key] = urllib.parse.unquote(val)
-            self.request_data = dict(self.get_data.items() + self.post_data.items())
+            
+            self.post_data = {}
+            request_body = body.split('\r\n\r\n', 1)[1]
+            if self.head.get('content-type', 'application/x-www-form-urlencoded') == 'application/x-www-form-urlencoded':
+                # 表单格式
+                parameters = request_body.split('&')   # 每一行是一个字段
+                for i in parameters:
+                    if i=='':
+                        continue
+                    key, val = i.split('=', 1)
+                    self.post_data[key] = val
+            else:
+                # 非表单格式
+                self.post_raw = request_body
+            # 合并post+get=>request
+            d = self.get_data.copy()
+            d.update(self.post_data)
+            self.request_data = d
             self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
         elif self.method == 'GET':
             if self.query:        # 含有参数的get
@@ -243,6 +254,7 @@ class HttpRequest(object):
             m.SESSION = self.processSession()            
             m.REQUEST = self.request_data
             m.POST = self.post_data
+            m.RAW = self.post_raw
             m.GET = self.get_data
             try:
                 self.response_body = m.app() # 注意：对应处理py中需要有app方法    

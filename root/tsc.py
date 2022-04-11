@@ -9,6 +9,7 @@ SESSION = None
 POST = None
 GET = None
 REQUEST = None
+RAW = None
 
 #生成随机密码
 import random

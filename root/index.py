@@ -17,6 +17,7 @@ SESSION = dict()
 POST = dict()
 GET = dict()
 REQUEST = dict()
+RAW = ''
 
 class Response():
     _DATA = {}
@@ -39,7 +40,7 @@ class Request():
     def __init__(self, post, get, session):
         self._POST = post
         self._GET = get
-        self.session = session
+        self._SESSION = session
 
     # 获取request值
     def __getattribute__(self, name: str):
