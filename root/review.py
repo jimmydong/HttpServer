@@ -8,6 +8,8 @@ curl -X POST --header "Content-Type: text/plain" 'http://127.0.0.1:7788/review?i
 cd /tmp
 pwd
 ls -lh
+
+echo
 echo "#:-)OK"
 EOF
 '''
@@ -64,8 +66,8 @@ def app():
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     result = p.communicate()
     ret = result[0].decode('utf-8', 'ignore')
-    if ret.find('error') == -1:
-        return "OK: %s" % ret
-    else:
-        return "Error: %s" % ret
+    if ret.find('#:-)OK') != -1:
+        return "OK"
+    elif ret.find('#:-)ERROR') != -1:
+        return "ERROR: %s" % ret.split('#:-)ERROR')[1]
     
