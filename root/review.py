@@ -68,6 +68,6 @@ def app():
     ret = result[0].decode('utf-8', 'ignore')
     if ret.find('#:-)OK') != -1:
         return "OK"
-    elif ret.find('#:-)ERROR') != -1:
-        return "ERROR: %s" % ret.split('#:-)ERROR')[1]
+    elif ret.find('#:-(ERROR') != -1:
+        return "ERROR: %s" % ret.split('#:-(ERROR')[1]
     
