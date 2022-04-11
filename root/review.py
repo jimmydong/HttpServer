@@ -21,6 +21,7 @@ EOF
 '''
 import os
 import subprocess
+import re
 
 # 全局变量
 SESSION = None
@@ -68,10 +69,15 @@ def app():
     # 执行脚本
     cmd = "cd %s && ./tsc_cmd mshell %s/iplist_temp 'sh /tmp/tsc_cmd/review_temp.sh' '' 2>&1" % (tsc_path, tsc_path)
     print(cmd)
-    fd = os.popen(cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     result = p.communicate()
     ret = result[0].decode('utf-8', 'ignore')
+
+    pattern = re.compile(r'.*shell output=\[\s(.*)]\slastshellexit', re.DOTALL):
+    m = pattern.match(ret)
+    if m:
+        ret = m.group(1)
+
     if ret.find('#:-)OK') != -1:
         return "OK\n%s" % ret.split('#:-)OK')[1]
     elif ret.find('#:-(ERROR') != -1:
