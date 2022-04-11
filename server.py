@@ -42,7 +42,7 @@ def tcp_link(sock, addr):
         http_req.passRequest(request)
         sock.send(http_req.getResponse().encode('utf-8'))
     except Exception as err:
-        print('exception: %s' % err.message)
+        print('exception: %s' % str(err))
         sock.send('500\r\n500 Internal Server Error'.encode('utf-8'))
     sock.close()
 

@@ -7,7 +7,7 @@ GET = None
 REQUEST = None
 
 def app():
-    if POST is not None:
+    if POST is not None and len(POST) > 0:
         print ('POST ', POST)
         if ('name' in POST.keys()) and ('password' in POST.keys()) and (POST['name'] == '123') and (POST['password']=='123'):
             SESSION.setCookie('name', '123')

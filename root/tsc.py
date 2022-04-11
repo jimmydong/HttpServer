@@ -19,19 +19,23 @@ def genPassword(length):
 
 def app():
     check_flag = False
-    if POST is not None:
+    if POST is not None and len(POST) > 0:
+        print("post")
+        print(POST)
         if ('ip' in POST.keys()) and ('password' in POST.keys()):
             ip = POST['ip']
             password = POST['password']
             check_flag = True
     else:
+        print("get")
+        print(GET)
         if ('ip' in GET.keys()) and ('password' in GET.keys()):
             ip = GET['ip']
             password = GET['password']
             check_flag = True
     if not check_flag:
         return 'error: no ip or password'
-    if not os.path.exits('/WORK/TOOLS//WORK/TOOLS/tsc_cmd/tsc_cmd'):
+    if not os.path.exists('/WORK/TOOLS//WORK/TOOLS/tsc_cmd/tsc_cmd'):
         return 'error: no tsc_cmd'
     #生成密码： 
     new_password = genPassword(16)
