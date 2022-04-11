@@ -35,7 +35,7 @@ def app():
             check_flag = True
     if not check_flag:
         return 'error: no ip or password'
-    if not os.path.exists('/WORK/TOOLS//WORK/TOOLS/tsc_cmd/tsc_cmd'):
+    if not os.path.exists('/WORK/TOOLS/tsc_cmd/tsc_cmd'):
         return 'error: no tsc_cmd'
     #生成密码： 
     new_password = genPassword(16)
