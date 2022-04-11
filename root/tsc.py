@@ -48,7 +48,8 @@ def app():
     for i in fd.readlines():
         t.append(i)
     fd.close()
-    ret = "\n".join(t)
+    # ret = "\n".join(t)
+    ret = t[-1]
     if ret.find('error') == -1:
         return "修改目标服务器: %s, 旧密码: %s, 新密码: %s ———— DONE!" % (ip, password, new_password)
     else:
