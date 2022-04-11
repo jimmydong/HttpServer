@@ -46,7 +46,9 @@ def app():
         return '测试'
 
     # 传输脚本
-    fd = os.popen("cd %s && ./tsc_cmd mupload iplist_temp %s/review_temp.sh /tmp/review_temp.sh 1000 2>&1" % (tsc_path, tsc_path))
+    cmd = "cd %s && ./tsc_cmd mupload iplist_temp %s/review_temp.sh /tmp/review_temp.sh 1000 2>&1" % (tsc_path, tsc_path)
+    print(cmd)
+    fd = os.popen(cmd)
     t = []
     for i in fd.readlines():
         t.append(i)
@@ -56,7 +58,9 @@ def app():
         return "Error: 传输错误\n%s" % ret
     
     # 执行脚本
-    fd = os.popen("cd %s && ./tsc_cmd mshell %s/iplist_temp 'sh /tmp/review_temp.sh' '' 2>&1" % (tsc_path, tsc_path))
+    cmd = "cd %s && ./tsc_cmd mshell %s/iplist_temp 'sh /tmp/review_temp.sh' '' 2>&1" % (tsc_path, tsc_path)
+    print(cmd)
+    fd = os.popen(cmd)
     t = []
     for i in fd.readlines():
         t.append(i)
