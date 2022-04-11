@@ -73,7 +73,7 @@ def app():
     result = p.communicate()
     ret = result[0].decode('utf-8', 'ignore')
 
-    pattern = re.compile(r'.*shell output=\[\s(.*)]\slastshellexit', re.DOTALL)
+    pattern = re.compile(r'.*shell output=\[(.*)lastshellexit', re.DOTALL)
     m = pattern.match(ret)
     if m:
         ret = m.group(1)
