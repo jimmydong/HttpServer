@@ -10,6 +10,7 @@ ls -lh
 EOF
 '''
 import os
+import subprocess
 
 # 全局变量
 SESSION = None
@@ -48,12 +49,9 @@ def app():
     # 传输脚本
     cmd = "cd %s && ./tsc_cmd mupload iplist_temp %s/review_temp.sh /tmp/review_temp.sh 1000 2>&1" % (tsc_path, tsc_path)
     print(cmd)
-    fd = os.popen(cmd)
-    t = []
-    for i in fd.readlines():
-        t.append(i)
-    fd.close()
-    ret = "\n".join(t)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    result = p.communicate()
+    ret = result[0].decode('utf-8', 'ignore')
     if ret.find('TRANSFER FILE OK') == -1:
         return "Error: 传输错误\n%s" % ret
     
