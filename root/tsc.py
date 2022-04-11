@@ -43,7 +43,7 @@ def app():
     with open('/WORK/TOOLS/tsc_cmd/iplist_temp', 'w') as f:
         f.write("%s\troot\t%s" % (ip, password))
     #执行命令
-    fd = os.popen("cd /WORK/TOOLS/tsc_cmd && ./tsc_cmd mshell iplist_temp \"echo 'root:%s' | chpasswd\" ''" % new_password)
+    fd = os.popen("cd /WORK/TOOLS/tsc_cmd && ./tsc_cmd mshell iplist_temp \"echo 'root:%s' | chpasswd\" '' 2>&1" % new_password)
     t = []
     for i in fd.readlines():
         t.append(i)
@@ -52,5 +52,5 @@ def app():
     if ret.find('error') == -1:
         return "修改目标服务器: %s, 旧密码: %s, 新密码: %s ———— DONE!" % (ip, password, new_password)
     else:
-        return "修改目标服务器: %s, 旧密码: %s, 新密码: %s ———— Error: %s" % ret
+        return "修改目标服务器: %s, 旧密码: %s, 新密码: %s ———— Error: %s" % (ip, password, new_password, ret)
     
