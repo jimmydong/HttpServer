@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 '''
 利用TSC进行远端服务器检查。非通用功能，仅适用特定服务器。
-调用参考：
-curl -X POST --header "Content-Type: text/plain" 'http://127.0.0.1:7788/review?ip=1.1.1.1&password=kakaka' --data-binary @- << EOF
+
+调用参考： 【注意】密码需做urlencode处理
+curl -X POST --header "Content-Type: text/plain" 'http://127.0.0.1:7788/review?ip=9.138.206.229&password=*********' --data-binary @- << EOF
 #!/bin/sh
 cd /tmp
 pwd
 ls -lh
+echo "#:-)OK"
 EOF
 '''
 import os
