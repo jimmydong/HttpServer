@@ -219,8 +219,8 @@ class HttpRequest(object):
     # 处理动态URL
     def dynamicRequest(self, path):
         debug('synamicRequest', path)
-        debug('get', self.get_data)
-        debug('post', self.post_data)
+        debug('param in get', self.get_data)
+        debug('param in post', self.post_data)
         if not os.path.isfile(path):
             # 如果文件不存在则输出404
             debug('file not found', path)
@@ -248,7 +248,7 @@ class HttpRequest(object):
                 self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
                 self.response_head['Set-Cookie'] = self.Cookie
             except Exception as err:
-                debug('Exception in %s' % file_path, err.message)
+                debug('Exception in %s' % file_path, str(err))
 
     def getResponse(self):
         return self.response_code + dict2str(self.response_head) + '\r\n' + self.response_body
