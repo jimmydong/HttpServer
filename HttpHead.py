@@ -5,6 +5,7 @@ import importlib
 import copy
 from util import debug
 import util
+import urllib.parse
 
 _debug = None #单文件调试开关
 
@@ -129,7 +130,7 @@ class HttpRequest(object):
                 parameters = self.query.split('&')
                 for i in parameters:
                     key, val = i.split('=', 1)
-                    self.get_data[key] = val
+                    self.get_data[key] = urllib.parse.unquote(val)
             self.request_data = dict(self.get_data.items() + self.post_data.items())
             self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
         elif self.method == 'GET':
@@ -137,7 +138,7 @@ class HttpRequest(object):
                 parameters = self.query.split('&')
                 for i in parameters:
                     key, val = i.split('=', 1)
-                    self.get_data[key] = val
+                    self.get_data[key] = urllib.parse.unquote(val)
                 self.request_data = copy.deepcopy(self.get_data)
                 self.dynamicRequest(HttpRequest.RootDir + self.url + '.py')
             else:
