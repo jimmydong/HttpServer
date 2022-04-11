@@ -261,6 +261,7 @@ class HttpRequest(object):
                 self.response_head['Content-Type'] = 'text/html;chartset=utf-8'
                 self.response_head['Set-Cookie'] = self.Cookie
             except Exception as err:
+                print(err)
                 debug('Exception in %s' % file_path, str(err))
 
     def getResponse(self):
