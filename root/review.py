@@ -2,7 +2,7 @@
 '''
 利用TSC进行远端服务器检查。非通用功能，仅适用特定服务器。
 
-调用参考： 【注意】密码需做urlencode处理
+调用参考：
 curl -X POST --header "Content-Type: text/plain" 'http://127.0.0.1:7788/review?ip=9.138.206.229&password=*********' --data-binary @- << EOF
 #!/bin/sh
 cd /tmp
@@ -12,6 +12,12 @@ ls -lh
 echo
 echo "#:-)OK"
 EOF
+
+【注意】
+    1, 密码需做urlencode处理
+    2, 成功返回标记：#:-)OK[成功信息]
+    3, 失败返回标记：#:-(ERROR[失败信息]
+    4, 无返回标识时，处理为：FAIL
 '''
 import os
 import subprocess
@@ -67,7 +73,10 @@ def app():
     result = p.communicate()
     ret = result[0].decode('utf-8', 'ignore')
     if ret.find('#:-)OK') != -1:
-        return "OK"
+        return "OK\n%s" % ret.split('#:-)OK')[1]
     elif ret.find('#:-(ERROR') != -1:
-        return "ERROR: %s" % ret.split('#:-(ERROR')[1]
+        return "ERROR\n%s" % ret.split('#:-(ERROR')[1]
+    else:
+        return "FAIL: 未找到返回标记\n%s" % ret
+
     
