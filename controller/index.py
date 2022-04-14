@@ -10,7 +10,7 @@ from root.index import Request, Response
 
 def index(request: Request, response: Response):
     out = "403 Forbidden: "
-    out += f"   {response._c}/{response._a}"
+    out += f"by laodong, v0.0.1"
     return out
 
 if __name__ == '__main__':
